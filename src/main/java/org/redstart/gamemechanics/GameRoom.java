@@ -1,6 +1,11 @@
 package org.redstart.gamemechanics;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.redstart.gamemechanics.logicstrategy.BasicMonsterMoveLogicImpl;
+import org.redstart.gamemechanics.logicstrategy.BasicUpdateSpeedLogicImpl;
+import org.redstart.gamemechanics.spells.FireBallSpell;
+import org.redstart.gamemechanics.spells.NextDamageProtectionSpell;
+import org.redstart.gamemechanics.spells.StanSpell;
 import org.redstart.jsonclasses.AdventureData;
 import org.redstart.jsonclasses.Monster;
 import org.redstart.jsonclasses.Player;
@@ -21,7 +26,23 @@ public class GameRoom {
 
     public GameRoom(GameLogic gameLogic) {
         player = new Player("RedStart", 100, 0, 0);
-        monster = new Monster("Sladkoeshka", 100, 10000);
+        player.addAvailableSpell(new FireBallSpell(this,
+                20,
+                20));
+        player.addAvailableSpell(new StanSpell(this,
+                20,
+                5000,
+                0));
+        player.addAvailableSpell(new NextDamageProtectionSpell(this,
+                20,
+                0));
+
+        monster = new Monster(
+                "Sladkoeshka",
+                100,
+                10000,
+                new BasicMonsterMoveLogicImpl(this),
+                new BasicUpdateSpeedLogicImpl());
         lock = new ReentrantLock();
         this.gameLogic = gameLogic;
         gameLogic.fillFieldForServer(player);

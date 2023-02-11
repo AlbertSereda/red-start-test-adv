@@ -1,9 +1,12 @@
 package org.redstart.jsonclasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.redstart.gamemechanics.spells.interfaces.Spell;
+import org.redstart.gamemechanics.spells.interfaces.WithTimeSpell;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Player {
     private String name;
@@ -14,6 +17,10 @@ public class Player {
     private int[][][] fieldForServer; //имя, индекс, цвет
     private List<Integer> blastedBlocks; //имена уничтоженных
     private List<int[]> spawnedBlocks; //массив заспавненых имя, индекс, цвет.
+    @JsonIgnore
+    private final List<Spell> availableSpells;
+    @JsonIgnore
+    private final List<WithTimeSpell> activeSpell;
 
     @JsonIgnore
     private int nextNameBlock = 1;
@@ -25,6 +32,16 @@ public class Player {
         this.shield = shield;
         blastedBlocks = new ArrayList<>();
         spawnedBlocks = new ArrayList<>();
+        availableSpells = new ArrayList<>();
+        activeSpell = new CopyOnWriteArrayList<>();
+    }
+
+    public void addAvailableSpell(Spell spell) {
+        availableSpells.add(spell);
+    }
+
+    public void addActiveSpell(WithTimeSpell withTimeSpell) {
+        activeSpell.add(withTimeSpell);
     }
 
     public String getName() {
@@ -89,5 +106,13 @@ public class Player {
 
     public void setShield(int shield) {
         this.shield = shield;
+    }
+
+    public List<Spell> getAvailableSpells() {
+        return availableSpells;
+    }
+
+    public List<WithTimeSpell> getActiveSpell() {
+        return activeSpell;
     }
 }

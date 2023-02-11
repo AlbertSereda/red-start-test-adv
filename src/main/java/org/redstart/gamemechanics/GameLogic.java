@@ -2,6 +2,7 @@ package org.redstart.gamemechanics;
 
 import org.redstart.gamemechanics.block.ColorBlock;
 import org.redstart.gamemechanics.block.ColorBlockInitializer;
+import org.redstart.gamemechanics.spells.interfaces.Spell;
 import org.redstart.jsonclasses.Monster;
 import org.redstart.jsonclasses.Player;
 
@@ -20,6 +21,7 @@ public class GameLogic {
     private static final int INDEX_COLOR = 2;
 
     private Map<Integer, ? super ColorBlock> colorBlocks;
+
 
     public GameLogic() {
         colorBlocks = new ColorBlockInitializer().getColorBlocks();
@@ -103,25 +105,21 @@ public class GameLogic {
         //testing(fieldForServer);
     }
 
-    public void monsterMove(GameRoom gameRoom) {
-        decrementPlayerHp(gameRoom.getPlayer(), 0);
-    }
-
     public void decrementPlayerHp(Player player, int countDamage) {
         int playerHp = player.getHp();
         int playerShield = player.getShield();
-        int damage = (int) (Math.random() * 10) + 10;
-        int damageToHp = damage / 2;
-        int damageToShield = damage - damageToHp;
 
-        log.info("Damage to player - " + damage);
+        int damageToHp = countDamage / 2;
+        int damageToShield = countDamage - damageToHp;
+
+        log.info("Damage to player - " + countDamage);
 
         playerShield -= damageToShield;
         if (playerShield < 0) {
             damageToHp += playerShield * (-1);
             playerShield = 0;
         }
-        playerHp -=damageToHp;
+        playerHp -= damageToHp;
 
         //TODO убрать потом if, для тестов нужен
         if (playerHp < 1) {
@@ -248,6 +246,22 @@ public class GameLogic {
                     player.getSpawnedBlocks().add(fieldForServer[i][j]);
                 }
             }
+        }
+    }
+
+    public void spellMove(GameRoom gameRoom, int clientMessage) {
+        Player player = gameRoom.getPlayer();
+        List<Spell> availableSpells = player.getAvailableSpells();
+        int numSpell = clientMessage * (-1) - 1;
+        if (numSpell < availableSpells.size()) {
+            Spell chooseSpell = availableSpells.get(numSpell);
+            int costSpell = chooseSpell.getCost();
+            int mana = player.getMana();
+            if (mana >= costSpell) {
+                chooseSpell.activate();
+            }
+        } else {
+            log.info("нет доступных заклинаний");
         }
     }
 }

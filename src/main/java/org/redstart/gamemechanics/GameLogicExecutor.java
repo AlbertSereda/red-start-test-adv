@@ -55,11 +55,15 @@ public class GameLogicExecutor {
                 if (gameRoom != null) {
                     switch (whoMove) {
                         case PLAYER:
-                            int nameBlockDestroyed = messageHandler.jsonToMessage(message);
-                            if (nameBlockDestroyed > 0) gameLogic.playerMove(gameRoom, nameBlockDestroyed);
+                            int clientMessage = messageHandler.jsonToMessage(message);
+                            if (clientMessage < 0) {
+                                log.info("message - " + clientMessage);
+                                gameLogic.spellMove(gameRoom, clientMessage);
+                            }
+                            if (clientMessage > 0) gameLogic.playerMove(gameRoom, clientMessage);
                             break;
                         case MONSTER:
-                            gameLogic.monsterMove(gameRoom);
+                            gameRoom.getMonster().getMonsterMoveLogic().monsterMove();
                             break;
                     }
                     try {

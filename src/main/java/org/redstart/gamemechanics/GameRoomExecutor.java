@@ -39,7 +39,7 @@ public class GameRoomExecutor {
                 byte[] message = messageHandler.objectToJson(gameRoom.getAdventureData());
                 socketHandler.writeToBuffer(socketChannel, message);
             } catch (JsonProcessingException e) {
-                log.log(Level.WARNING, "JSON error");
+                log.log(Level.WARNING, "JSON error" + e);
             }
             gameRoom.getPlayer().getSpawnedBlocks().clear();
             gameRooms.put(socketChannel, gameRoom);

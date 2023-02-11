@@ -28,7 +28,7 @@ public class MessageHandler {
 //        } else {
 //            str = message.substring(0, firstN).replaceAll("\\D", "");
 //        }
-        String str = message.replaceAll("\\D", "");
+        String str = message.replaceAll("[^\\d-]", "");
         int number = 0;
         try {
             number = Integer.parseInt(str);

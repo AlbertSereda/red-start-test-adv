@@ -1,6 +1,8 @@
 package org.redstart.jsonclasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.redstart.gamemechanics.logicstrategy.interfaces.MonsterMoveLogic;
+import org.redstart.gamemechanics.logicstrategy.interfaces.UpdateSpeedLogic;
 
 public class Monster {
     private String name;
@@ -10,11 +12,17 @@ public class Monster {
 
     @JsonIgnore
     private Long timeCreation;
+    @JsonIgnore
+    private MonsterMoveLogic monsterMoveLogic;
+    @JsonIgnore
+    private UpdateSpeedLogic updateSpeedLogic;
 
-    public Monster(String name, int hp, int maxSpeed) {
+    public Monster(String name, int hp, int maxSpeed, MonsterMoveLogic monsterMoveLogic, UpdateSpeedLogic updateSpeedLogic) {
         this.name = name;
         this.hp = hp;
         this.maxSpeed = maxSpeed;
+        this.monsterMoveLogic = monsterMoveLogic;
+        this.updateSpeedLogic = updateSpeedLogic;
     }
 
     public void setNewTimeCreation() {
@@ -22,11 +30,6 @@ public class Monster {
         currentSpeed = maxSpeed;
     }
 
-    public void updateCurrentSpeed() {
-        long timePassed = System.currentTimeMillis() - timeCreation;
-        currentSpeed = (int) (maxSpeed - timePassed);
-
-    }
     public String getName() {
         return name;
     }
@@ -75,5 +78,21 @@ public class Monster {
 
     public void setTimeCreation(Long timeCreation) {
         this.timeCreation = timeCreation;
+    }
+
+    public MonsterMoveLogic getMonsterMoveLogic() {
+        return monsterMoveLogic;
+    }
+
+    public void setMonsterMoveLogic(MonsterMoveLogic monsterMoveLogic) {
+        this.monsterMoveLogic = monsterMoveLogic;
+    }
+
+    public UpdateSpeedLogic getUpdateSpeedLogic() {
+        return updateSpeedLogic;
+    }
+
+    public void setUpdateSpeedLogic(UpdateSpeedLogic updateSpeedLogic) {
+        this.updateSpeedLogic = updateSpeedLogic;
     }
 }

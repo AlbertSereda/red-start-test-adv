@@ -56,7 +56,7 @@ public class SocketHandler implements Runnable {
                         SocketChannel socketChannel = null;
                         try {
                             if (key.isAcceptable()) {
-                                acceptChannel(key);
+                                acceptChannel();
                             }
 
                             if (key.isReadable()) {
@@ -95,7 +95,7 @@ public class SocketHandler implements Runnable {
         }
     }
 
-    private void acceptChannel(SelectionKey key) {
+    private void acceptChannel() {
         try {
             SocketChannel socketChannel = serverSocketChannel.accept();
             socketChannel.configureBlocking(false);
@@ -128,6 +128,7 @@ public class SocketHandler implements Runnable {
 
             //TODO избавиться от постоянного создания стринг
             String clientMessage = new String(readBuffer.array(), readBuffer.position(), readBuffer.limit());
+//            log.info("message from client - " + clientMessage.replaceAll("[\\n\\r]", ""));
             gameLogicExecutor.addTasksToExecute(socketChannel, clientMessage);
 
             readBuffer.clear();

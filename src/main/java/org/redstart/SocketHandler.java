@@ -2,14 +2,11 @@ package org.redstart;
 
 import org.redstart.gamemechanics.GameLogicExecutor;
 import org.redstart.gamemechanics.GameRoomExecutor;
-import org.redstart.gamemechanics.Move;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,12 +15,9 @@ public class SocketHandler implements Runnable {
 
     private static final Logger log = Logger.getLogger(SocketHandler.class.getName());
 
-    private static final int READ_BUFFER_CAPACITY = 1000;
-    private static final int WRITE_BUFFER_CAPACITY = 2000;
-
     private final ServerSocketChannel serverSocketChannel;
 
-    private final Map<SocketChannel, ByteBufferWrap> channels;
+    private final Map<SocketChannel, SocketClient> channels;
 
     private final GameRoomExecutor gameRoomExecutor;
 
@@ -108,12 +102,9 @@ public class SocketHandler implements Runnable {
 
             log.info("Connected " + socketChannel);
 
-            ByteBuffer readBuffer = ByteBuffer.allocate(READ_BUFFER_CAPACITY);
-            ByteBuffer writeBuffer = ByteBuffer.allocate(WRITE_BUFFER_CAPACITY);
+            SocketClient socketClient = new SocketClient(socketChannel);
 
-            ByteBufferWrap bufferWrap = new ByteBufferWrap(readBuffer, writeBuffer);
-
-            channels.put(socketChannel, bufferWrap);
+            channels.put(socketChannel, socketClient);
 
             gameRoomExecutor.createGameRoom(socketChannel);
         } catch (IOException e) {
@@ -122,8 +113,8 @@ public class SocketHandler implements Runnable {
     }
 
     private void readChannel(SocketChannel socketChannel) throws IOException {
-        ByteBufferWrap bufferWrap = channels.get(socketChannel);
-        ByteBuffer readBuffer = bufferWrap.getReadBuffer();
+        SocketClient socketClient = channels.get(socketChannel);
+        ByteBuffer readBuffer = socketClient.getReadBuffer();
 
         int bytesRead = socketChannel.read(readBuffer);
 
@@ -137,7 +128,6 @@ public class SocketHandler implements Runnable {
 
             //TODO избавиться от постоянного создания стринг
             String clientMessage = new String(readBuffer.array(), readBuffer.position(), readBuffer.limit());
-            //System.out.println("client message - " + clientMessage);
             gameLogicExecutor.addTasksToExecute(socketChannel, clientMessage);
 
             readBuffer.clear();
@@ -145,53 +135,47 @@ public class SocketHandler implements Runnable {
     }
 
     private void writeChannel(SocketChannel socketChannel) throws IOException {
-        ByteBufferWrap bufferWrap = channels.get(socketChannel);
-        ByteBuffer writeBuffer = bufferWrap.getWriteBuffer();
+        SocketClient socketClient;
+        if ((socketClient = channels.get(socketChannel)) != null) {
+            ByteBuffer writeBuffer = socketClient.getWriteBuffer();
 
-        socketChannel.write(writeBuffer);
+            if (writeBuffer.position() == 0) {
+                byte[] bytesToWrite = socketClient.getWriteToSocketQueue().poll();
+                if (bytesToWrite != null) {
+                    writeBuffer.put(ByteBuffer.wrap(bytesToWrite));
+                    if (bytesToWrite.length != 0) {
+                        if ((bytesToWrite[bytesToWrite.length - 1]) != '\n') {
+                            writeBuffer.put((byte) '\n');
+                        }
+                    }
+                }
+                writeBuffer.flip();
+            }
 
-        if (!writeBuffer.hasRemaining()) {
-            writeBuffer.compact();
-            socketChannel.register(selector, SelectionKey.OP_READ);
-            writeBuffer.clear();
-            bufferWrap.getIsReadyWrite().set(true);
+            socketChannel.write(writeBuffer);
+
+            if (!writeBuffer.hasRemaining()) {
+                writeBuffer.compact();
+                socketChannel.register(selector, SelectionKey.OP_READ);
+                writeBuffer.clear();
+            }
         }
     }
-    //TODO изменить способ отправки
-    //новые данные для отправки будем помещать в очередь, которая будет храниться у SocketClient
-    //мапу channels переделать, что бы она хранила <SocketChannel, SocketClient>
-    //после того как данные поместились в очередь, помечаем что можно писать в сокет
-    //writeChannel будет брать из очереди данные и отправлять их
 
     public void writeToBuffer(SocketChannel socketChannel, byte[] bytesToWrite) {
-        if (channels.containsKey(socketChannel)) {
-            ByteBufferWrap bufferWrap = channels.get(socketChannel);
-            ByteBuffer writeBuffer = bufferWrap.getWriteBuffer();
-            while (bufferWrap !=null &&  !bufferWrap.getIsReadyWrite().get() ) {
-                if (!socketChannel.isConnected()) {
-                    return;
-                }
-            }
-            bufferWrap.getIsReadyWrite().set(false);
-            writeBuffer.put(ByteBuffer.wrap(bytesToWrite));
-            if (bytesToWrite.length != 0) {
-                if ((bytesToWrite[bytesToWrite.length - 1]) != '\n') {
-                    writeBuffer.put((byte) '\n');
-                }
-            }
-
-            writeBuffer.flip();
-
+        SocketClient socketClient;
+        if ((socketClient = channels.get(socketChannel)) != null) {
+            socketClient.addToWriteQueue(bytesToWrite);
+            //TODO проверить, если 10 раз положить в очередь и один раз вызвать read, то сколько считает
             try {
                 socketChannel.register(selector, SelectionKey.OP_WRITE);
             } catch (ClosedChannelException e) {
                 log.log(Level.INFO, "Connection is close");
             }
-
         }
     }
 
-    public Map<SocketChannel, ByteBufferWrap> getChannels() {
+    public Map<SocketChannel, SocketClient> getChannels() {
         return channels;
     }
 }

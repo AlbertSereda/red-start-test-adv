@@ -2,8 +2,9 @@ package org.redstart;
 
 import org.redstart.gamemechanics.GameLogic;
 import org.redstart.gamemechanics.GameLogicExecutor;
+import org.redstart.gamemechanics.GameLoop;
 import org.redstart.gamemechanics.GameRoomExecutor;
-import org.redstart.massage.MessageHandler;
+import org.redstart.message.MessageHandler;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -47,6 +48,12 @@ public class Server {
             gameLogicExecutor.setGameLogic(gameLogic);
 
             SocketHandler socketHandler = new SocketHandler(serverSocketChannel, gameRoomExecutor, gameLogicExecutor);
+
+            GameLoop gameLoop = new GameLoop(/*messageHandler,*/ gameRoomExecutor.getGameRooms());
+            gameLoop.setGameLogicExecutor(gameLogicExecutor);
+//            gameLoop.setChannels(socketHandler.getChannels());
+//            gameLoop.setSocketHandler(socketHandler);
+            new Thread(gameLoop).start();
 
             executorService.execute(socketHandler);
 

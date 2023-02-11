@@ -16,7 +16,7 @@ public class Player {
     private List<int[]> spawnedBlocks; //массив заспавненых имя, индекс, цвет.
 
     @JsonIgnore
-    private int nextNameBlock = 0;
+    private int nextNameBlock = 1;
 
     public Player(String name, int hp, int mana, int shield) {
         this.name = name;

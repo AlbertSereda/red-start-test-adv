@@ -2,7 +2,7 @@ package org.redstart.gamemechanics;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.redstart.SocketHandler;
-import org.redstart.massage.MessageHandler;
+import org.redstart.message.MessageHandler;
 
 import java.nio.channels.SocketChannel;
 import java.util.Map;
@@ -34,14 +34,15 @@ public class GameRoomExecutor {
         executorService.execute(() -> {
 
             GameRoom gameRoom = new GameRoom(gameLogic);
-            gameRooms.put(socketChannel, gameRoom);
+            gameRoom.getMonster().setNewTimeCreation();
             try {
                 byte[] message = messageHandler.objectToJson(gameRoom.getAdventureData());
                 socketHandler.writeToBuffer(socketChannel, message);
-
             } catch (JsonProcessingException e) {
-                log.log(Level.WARNING, "JSON error", e);
+                log.log(Level.WARNING, "JSON error");
             }
+            gameRoom.getPlayer().getSpawnedBlocks().clear();
+            gameRooms.put(socketChannel, gameRoom);
         });
     }
 
@@ -62,5 +63,9 @@ public class GameRoomExecutor {
 
     public void setGameLogic(GameLogic gameLogic) {
         this.gameLogic = gameLogic;
+    }
+
+    public Map<SocketChannel, GameRoom> getGameRooms() {
+        return gameRooms;
     }
 }

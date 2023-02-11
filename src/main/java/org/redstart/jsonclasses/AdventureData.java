@@ -8,13 +8,9 @@ public class AdventureData {
     private Player player;
     private Monster monster;
 
-    @JsonIgnore
-    private List<int[]> spawnedBlocks;
-
     public AdventureData(Player player, Monster monster) {
         this.player = player;
         this.monster = monster;
-        spawnedBlocks = player.getSpawnedBlocks();
     }
 
     public Player getPlayer() {
@@ -33,11 +29,4 @@ public class AdventureData {
         this.monster = monster;
     }
 
-    public List<int[]> getSpawnedBlocks() {
-        return spawnedBlocks;
-    }
-
-    public void setSpawnedBlocks(List<int[]> spawnedBlocks) {
-        this.spawnedBlocks = spawnedBlocks;
-    }
 }

@@ -1,13 +1,13 @@
 package org.redstart.gamemechanics;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.redstart.Server;
 import org.redstart.SocketHandler;
-import org.redstart.massage.MessageHandler;
+import org.redstart.message.MessageHandler;
 
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,25 +27,63 @@ public class GameLogicExecutor {
         executorService = Executors.newFixedThreadPool(nThreads);
     }
 
-    public void executePlayerMove(SocketChannel socketChannel, String message) {
+    public void addTasksToExecute(SocketChannel socketChannel, String message) {
 
         executorService.execute(() -> {
+            String[] messageSplit = message.split("\n");
+            String lastString = "";
 
-            int nameBlockDestroyed = messageHandler.jsonToMessage(message);
-            GameRoom gameRoom = gameRoomExecutor.getGameRoom(socketChannel);
-            if (gameRoom != null) {
-                gameLogic.playerMove(gameRoom, nameBlockDestroyed);
-                try {
-                    byte[] json = messageHandler.objectToJson(gameRoom.getAdventureData());
-                    socketHandler.writeToBuffer(socketChannel, json);
-                } catch (JsonProcessingException e) {
-                    log.log(Level.WARNING, "JSON error", e);
+            for (int i = 0; i < messageSplit.length; i++) {
+
+                if (!lastString.equals(messageSplit[i])) {
+                    executeMove(socketChannel, Move.PLAYER, messageSplit[i]);
+                    lastString = messageSplit[i];
                 }
-            } else {
-                log.log(Level.WARNING, "Game Room = null for socketChannel - " + socketChannel + ". The gameRoom was not to sent the socketChannel");
+            }
+        });
+    }
+
+    public void executeMove(SocketChannel socketChannel, Move whoMove, String message) {
+        executorService.execute(() -> {
+            if (!socketChannel.isConnected()) {
+                return;
+            }
+            GameRoom gameRoom = gameRoomExecutor.getGameRoom(socketChannel);
+            Lock lock = gameRoom.getLock();
+            lock.lock();
+            try {
+                if (gameRoom != null) {
+                    switch (whoMove) {
+                        case PLAYER:
+                            int nameBlockDestroyed = messageHandler.jsonToMessage(message);
+                            if (nameBlockDestroyed > 0) gameLogic.playerMove(gameRoom, nameBlockDestroyed);
+                            break;
+                        case MONSTER:
+                            gameLogic.monsterMove(gameRoom);
+                            break;
+                    }
+                    try {
+                        byte[] sendMessage = messageHandler.objectToJson(gameRoom.getAdventureData());
+                        gameRoom.getPlayer().getBlastedBlocks().clear();
+                        gameRoom.getPlayer().getSpawnedBlocks().clear();
+                        socketHandler.writeToBuffer(socketChannel, sendMessage);
+                    } catch (JsonProcessingException e) {
+                        log.log(Level.WARNING, "JSON error");
+                    }
+                } else {
+                    log.log(Level.WARNING, "Game Room = null for socketChannel - " + socketChannel);
+                }
+            } finally {
+                lock.unlock();
             }
 
         });
+
+
+    }
+
+    public void executeMove(SocketChannel socketChannel, Move whoMove) {
+        executeMove(socketChannel, whoMove, "");
     }
 
     public void setSocketHandler(SocketHandler socketHandler) {

@@ -13,13 +13,9 @@ public class BlueColorBlock implements ColorBlock {
     @Override
     public void executeAction(GameRoom gameRoom) {
         Player player = gameRoom.getPlayer();
-        Monster monster = gameRoom.getMonster();
 
         int countChoose = player.getBlastedBlocks().size();
         player.setMana(player.getMana() + countChoose);
-
-        gameRoom.getGameLogic().decrementMonsterHP(monster, countChoose);
-
         log.info("Blue color choose - " + countChoose);
     }
 }

@@ -19,8 +19,8 @@ public class RedColorBlock implements ColorBlock {
         if (countChoose >= 10) {
             countChoose *= 2;
         }
-
-        gameRoom.getGameLogic().decrementMonsterHP(monster, countChoose);
+        int countDamage = countChoose * 2;
+        gameRoom.getGameLogic().decrementMonsterHP(monster, countDamage);
         log.info("Red color choose - " + gameRoom.getPlayer().getBlastedBlocks().size());
     }
 }

@@ -1,18 +1,32 @@
 package org.redstart.jsonclasses;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Monster {
     private String name;
     private int hp;
     private int maxSpeed;
     private int currentSpeed;
 
+    @JsonIgnore
+    private Long timeCreation;
+
     public Monster(String name, int hp, int maxSpeed) {
         this.name = name;
         this.hp = hp;
         this.maxSpeed = maxSpeed;
-        currentSpeed = 25;
     }
 
+    public void setNewTimeCreation() {
+        timeCreation = System.currentTimeMillis();
+        currentSpeed = maxSpeed;
+    }
+
+    public void updateCurrentSpeed() {
+        long timePassed = System.currentTimeMillis() - timeCreation;
+        currentSpeed = (int) (maxSpeed - timePassed);
+
+    }
     public String getName() {
         return name;
     }
@@ -53,5 +67,13 @@ public class Monster {
                 ", maxSpeed=" + maxSpeed +
                 ", currentSpeed=" + currentSpeed +
                 '}';
+    }
+
+    public Long getTimeCreation() {
+        return timeCreation;
+    }
+
+    public void setTimeCreation(Long timeCreation) {
+        this.timeCreation = timeCreation;
     }
 }

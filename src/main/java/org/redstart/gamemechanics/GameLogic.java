@@ -28,12 +28,15 @@ public class GameLogic {
     public void fillFieldForServer(Player player) {
         int[][][] fieldForServer = new int[LENGTH_FIELD][LENGTH_FIELD][];
 
-        int nextNameBlock = 0;
+        int nextNameBlock = player.getNextNameBlock();
+        int nextIndexBlock = 0;
         for (int i = fieldForServer.length - 1; i >= 0; i--) {
             for (int j = 0; j < fieldForServer[i].length; j++) {
 
                 int color = getRandomColor();
-                int[] block = new int[]{nextNameBlock, nextNameBlock, color};
+                //int color = 1;
+                int[] block = new int[]{nextNameBlock, nextIndexBlock, color};
+                nextIndexBlock++;
                 fieldForServer[i][j] = block;
                 player.getSpawnedBlocks().add(block);
                 nextNameBlock++;
@@ -69,6 +72,7 @@ public class GameLogic {
 
 
     public void playerMove(GameRoom gameRoom, int nameBlockDestroyed) {
+        System.out.println("choose block - " + nameBlockDestroyed);
         Player player = gameRoom.getPlayer();
         List<Integer> blastedBlocks = player.getBlastedBlocks();
         List<int[]> spawnedBlocks = player.getSpawnedBlocks();
@@ -96,14 +100,17 @@ public class GameLogic {
         ColorBlock colorBlock = (ColorBlock) colorBlocks.get(chooseColor);
         colorBlock.executeAction(gameRoom);
 
-        decrementPlayerHp(gameRoom.getPlayer());
         //testing(fieldForServer);
     }
 
-    private void decrementPlayerHp(Player player) {
+    public void monsterMove(GameRoom gameRoom) {
+        decrementPlayerHp(gameRoom.getPlayer(), 0);
+    }
+
+    public void decrementPlayerHp(Player player, int countDamage) {
         int playerHp = player.getHp();
         int playerShield = player.getShield();
-        int damage = (int) (Math.random() * 10);
+        int damage = (int) (Math.random() * 10) + 10;
         int damageToHp = damage / 2;
         int damageToShield = damage - damageToHp;
 
@@ -116,7 +123,7 @@ public class GameLogic {
         }
         playerHp -=damageToHp;
 
-        //TODO убрать потом if, для тестов
+        //TODO убрать потом if, для тестов нужен
         if (playerHp < 1) {
             playerHp = 100;
         }

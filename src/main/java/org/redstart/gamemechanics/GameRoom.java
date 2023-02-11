@@ -5,9 +5,14 @@ import org.redstart.jsonclasses.AdventureData;
 import org.redstart.jsonclasses.Monster;
 import org.redstart.jsonclasses.Player;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class GameRoom {
     private Player player;
     private Monster monster;
+
+    private final Lock lock;
 
     @JsonIgnore
     private GameLogic gameLogic;
@@ -16,13 +21,12 @@ public class GameRoom {
 
     public GameRoom(GameLogic gameLogic) {
         player = new Player("RedStart", 100, 0, 0);
-        monster = new Monster("Tanos", 100, 20);
+        monster = new Monster("Sladkoeshka", 100, 10000);
+        lock = new ReentrantLock();
         this.gameLogic = gameLogic;
         gameLogic.fillFieldForServer(player);
         adventureData = new AdventureData(player, monster);
     }
-
-
 
     public Player getPlayer() {
         return player;
@@ -50,5 +54,9 @@ public class GameRoom {
 
     public AdventureData getAdventureData() {
         return adventureData;
+    }
+
+    public Lock getLock() {
+        return lock;
     }
 }

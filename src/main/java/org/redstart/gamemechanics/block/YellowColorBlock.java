@@ -13,12 +13,9 @@ public class YellowColorBlock implements ColorBlock {
     @Override
     public void executeAction(GameRoom gameRoom) {
         Player player = gameRoom.getPlayer();
-        Monster monster = gameRoom.getMonster();
 
         int countChoose = player.getBlastedBlocks().size();
         player.setShield(player.getShield() + countChoose);
-
-        gameRoom.getGameLogic().decrementMonsterHP(monster, countChoose);
         log.info("Yellow color choose - " + gameRoom.getPlayer().getBlastedBlocks().size());
     }
 }

@@ -1,8 +1,7 @@
-package org.redstart.massage;
+package org.redstart.message;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.redstart.Server;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,6 +21,13 @@ public class MessageHandler {
 
     public int jsonToMessage(String message) {
         //log.info("Message from client - " + message.replaceAll("[\r\n]]", ""));
+//        int firstN = message.indexOf('\n');
+//        String str;
+//        if (firstN == -1) {
+//            str = message.replaceAll("\\D", "");
+//        } else {
+//            str = message.substring(0, firstN).replaceAll("\\D", "");
+//        }
         String str = message.replaceAll("\\D", "");
         int number = 0;
         try {

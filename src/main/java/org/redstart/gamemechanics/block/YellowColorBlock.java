@@ -2,7 +2,6 @@ package org.redstart.gamemechanics.block;
 
 import org.redstart.annotation.ColorClass;
 import org.redstart.gamemechanics.GameRoom;
-import org.redstart.jsonclasses.Monster;
 import org.redstart.jsonclasses.Player;
 
 import java.util.logging.Logger;
@@ -16,6 +15,6 @@ public class YellowColorBlock implements ColorBlock {
 
         int countChoose = player.getBlastedBlocks().size();
         player.setShield(player.getShield() + countChoose);
-        log.info("Yellow color choose - " + gameRoom.getPlayer().getBlastedBlocks().size());
+        //log.info("Yellow color choose - " + gameRoom.getPlayer().getBlastedBlocks().size());
     }
 }

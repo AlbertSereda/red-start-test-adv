@@ -21,6 +21,6 @@ public class RedColorBlock implements ColorBlock {
         }
         int countDamage = countChoose * 2;
         gameRoom.getGameLogic().decrementMonsterHP(monster, countDamage);
-        log.info("Red color choose - " + gameRoom.getPlayer().getBlastedBlocks().size());
+        //log.info("Red color choose - " + gameRoom.getPlayer().getBlastedBlocks().size());
     }
 }

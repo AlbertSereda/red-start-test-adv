@@ -33,7 +33,6 @@ public class StanSpell implements WithTimeSpell, UpdateSpeedLogic {
 
     @Override
     public void activate() {
-        log.info("StanSpell activate");
         decrementMana(gameRoom.getPlayer(), cost);
         resetSpell();
         timeCreation = System.currentTimeMillis();
@@ -47,6 +46,7 @@ public class StanSpell implements WithTimeSpell, UpdateSpeedLogic {
 
             gameRoom.getPlayer().addActiveSpell(this);
         }
+        log.info("StanSpell activate");
     }
 
     @Override
@@ -54,6 +54,7 @@ public class StanSpell implements WithTimeSpell, UpdateSpeedLogic {
         Monster monster = gameRoom.getMonster();
         monster.setUpdateSpeedLogic(oldUpdateSpeedLogic);
         isActive = false;
+        log.info("StanSpell deactivate");
     }
 
     @Override

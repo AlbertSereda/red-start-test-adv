@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class SocketClient {
 
@@ -19,11 +20,16 @@ public class SocketClient {
 
     private final Queue<byte[]> writeToSocketQueue;
 
+    public final Queue<ByteBufferWrap> bufferWraps;
+    public  boolean isWritable = false;
+    public  boolean isReadable = false;
+
     public SocketClient(SocketChannel socketChannel) {
         this.socketChannel = socketChannel;
         this.writeBuffer = ByteBuffer.allocate(WRITE_BUFFER_CAPACITY);
         this.readBuffer = ByteBuffer.allocate(READ_BUFFER_CAPACITY);
         this.writeToSocketQueue = new ConcurrentLinkedQueue<>();
+        this.bufferWraps = new LinkedBlockingQueue<>();
     }
 
     public SocketChannel getSocketChannel() {
@@ -43,6 +49,7 @@ public class SocketClient {
     }
 
     public void addToWriteQueue(byte[] bytes) {
-        writeToSocketQueue.add(bytes);
+        //writeToSocketQueue.add(bytes);
+        bufferWraps.add(new ByteBufferWrap(bytes));
     }
 }

@@ -74,7 +74,7 @@ public class GameLogic {
 
 
     public void playerMove(GameRoom gameRoom, int nameBlockDestroyed) {
-        System.out.println("choose block - " + nameBlockDestroyed);
+        //System.out.println("choose block - " + nameBlockDestroyed);
         Player player = gameRoom.getPlayer();
         List<Integer> blastedBlocks = player.getBlastedBlocks();
         List<int[]> spawnedBlocks = player.getSpawnedBlocks();
@@ -112,7 +112,7 @@ public class GameLogic {
         int damageToHp = countDamage / 2;
         int damageToShield = countDamage - damageToHp;
 
-        log.info("Damage to player - " + countDamage);
+        //log.info("Damage to player - " + countDamage);
 
         playerShield -= damageToShield;
         if (playerShield < 0) {

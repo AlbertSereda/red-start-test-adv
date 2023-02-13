@@ -141,7 +141,9 @@ public class SocketHandler implements Runnable {
             ByteBuffer writeBuffer = socketClient.getWriteBuffer();
 
             if (writeBuffer.position() == 0) {
-                byte[] bytesToWrite = socketClient.getWriteToSocketQueue().poll();
+                //byte[] bytesToWrite = socketClient.getWriteToSocketQueue().poll();
+                ByteBufferWrap bufferWrap = socketClient.bufferWraps.poll();
+                byte[] bytesToWrite = bufferWrap.bytes;
                 if (bytesToWrite != null) {
                     writeBuffer.put(ByteBuffer.wrap(bytesToWrite));
                     if (bytesToWrite.length != 0) {
@@ -149,6 +151,11 @@ public class SocketHandler implements Runnable {
                             writeBuffer.put((byte) '\n');
                         }
                     }
+                    long l = System.currentTimeMillis() - bufferWrap.timeCreation;
+                    if (l > 10) {
+                        System.out.println(l);
+                    }
+
                 }
                 writeBuffer.flip();
             }
@@ -159,6 +166,9 @@ public class SocketHandler implements Runnable {
                 writeBuffer.compact();
                 socketChannel.register(selector, SelectionKey.OP_READ);
                 writeBuffer.clear();
+                if (!socketClient.bufferWraps.isEmpty()) {
+                    socketChannel.register(selector, SelectionKey.OP_WRITE);
+                }
             }
         }
     }
